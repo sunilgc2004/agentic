@@ -1,0 +1,81 @@
+name: Autonomous AI QA Pipeline
+
+on:
+  push:
+    branches: [ main, staging, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test Mode to execute'
+        required: true
+        default: 'SMOKE'
+        type: choice
+        options:
+          - SMOKE
+          - FUNCTIONAL
+          - REGRESSION
+          - NEGATIVE
+          - FULL_QA
+
+jobs:
+  backend-unit-tests:
+    name: Run QA Agent Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run Pytest Suite
+        run: |
+          cd backend
+          pytest tests -v
+
+  autonomous-qa-verification:
+    name: Execute Autonomous Browser Testing Run
+    needs: backend-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies & Browsers
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Launch Backend Server & Run Headless Verification
+        run: |
+          cd backend
+          # Launch backend in background
+          python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          # Trigger automated autonomous smoke execution run via test harness
+          python -m pytest tests/test_api.py -v
+
+      - name: Upload QA Artifacts & Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-execution-reports
+          path: |
+            backend/data/reports/
+            backend/data/evidence/

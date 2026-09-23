@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-qa-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/qa_agent.db
+      - LLM_PROVIDER=heuristic
+      - DEFAULT_BROWSER=chromium
+      - HEADLESS=true
+      - CONFIDENCE_THRESHOLD=0.70
+    volumes:
+      - qa_data:/app/backend/data
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    container_name: ai-qa-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:8000
+    restart: unless-stopped
+
+volumes:
+  qa_data:

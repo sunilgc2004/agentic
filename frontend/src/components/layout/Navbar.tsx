@@ -20,9 +20,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center space-x-3">
-        <img src="/favicon.svg" alt="AI QA Agent" className="w-9 h-9 rounded-lg shadow-sm" />
+        <img src="/logo.png" alt="Tech Venture" className="w-10 h-10 rounded-full border border-purple-500/40 shadow-sm object-cover" />
         <div>
-          <span className="font-bold text-slate-100 text-lg tracking-tight">AI QA Agent</span>
+          <span className="font-bold text-slate-100 text-lg tracking-tight">Tech Venture QA</span>
           <span className="ml-2 text-xs uppercase px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">
             Autonomous
           </span>

@@ -1,0 +1,36 @@
+version: '3.8'
+
+# Staging Environment Compose
+# Run with: docker compose -f docker-compose.staging.yml up --build -d
+
+services:
+  backend-stage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-qa-backend-stage
+    ports:
+      - "8080:8000"
+    env_file:
+      - .env.staging
+    volumes:
+      - qa_stage_data:/app/backend/data
+    restart: unless-stopped
+
+  frontend-stage:
+    image: node:20-alpine
+    container_name: ai-qa-frontend-stage
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5174:5173"
+    command: sh -c "npm install && npm run dev -- --host --port 5173"
+    depends_on:
+      - backend-stage
+    environment:
+      - VITE_API_URL=http://backend-stage:8000
+    restart: unless-stopped
+
+volumes:
+  qa_stage_data:

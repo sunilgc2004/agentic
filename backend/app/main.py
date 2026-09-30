@@ -86,3 +86,29 @@ def health_check():
         "database": "connected",
         "llm_provider": settings.LLM_PROVIDER
     }
+
+
+# Serve built React frontend if dist directory exists
+potential_dist_paths = [
+    Path("/app/frontend/dist"),
+    settings.BASE_DIR.parent / "frontend" / "dist",
+    settings.BASE_DIR / "frontend" / "dist",
+    settings.BASE_DIR / "dist",
+]
+
+dist_dir = next((p for p in potential_dist_paths if p.exists() and (p / "index.html").exists()), None)
+
+if dist_dir:
+    from fastapi.responses import FileResponse
+    assets_dir = dist_dir / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="static_assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api") or full_path.startswith("ws") or full_path in ("health", "docs", "openapi.json"):
+            return None
+        file_path = dist_dir / full_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(dist_dir / "index.html")

@@ -27,10 +27,21 @@ class BrowserManager:
         launcher = browser_map.get(self.browser_type_name, self.playwright.chromium)
 
         logger.info(f"Launching {self.browser_type_name} (headless={self.headless})...")
-        self.browser = await launcher.launch(
-            headless=self.headless,
-            args=["--disable-dev-shm-usage", "--no-sandbox"] if self.browser_type_name == "chromium" else []
-        )
+        launch_args = ["--disable-dev-shm-usage", "--no-sandbox"] if self.browser_type_name == "chromium" else []
+        try:
+            self.browser = await launcher.launch(
+                headless=self.headless,
+                args=launch_args
+            )
+        except Exception as e:
+            if not self.headless:
+                logger.warning(f"Could not launch browser in visible/headed mode ({e}). Falling back to headless mode.")
+                self.browser = await launcher.launch(
+                    headless=True,
+                    args=launch_args
+                )
+            else:
+                raise
 
         context_options = {
             "viewport": {"width": 1280, "height": 800},

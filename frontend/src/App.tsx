@@ -76,7 +76,7 @@ export const App: React.FC = () => {
         mode: config.mode,
         environment: config.environment || 'qa',
         browser: config.browser || 'chromium',
-        headless: config.headless !== false,
+        headless: config.headless,
         custom_prompt: config.custom_prompt,
       });
 

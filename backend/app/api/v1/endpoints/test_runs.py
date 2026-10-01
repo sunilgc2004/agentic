@@ -53,6 +53,8 @@ def start_test_run(
 
     run_name = data.name or f"{data.mode.capitalize()} Run - {app.name}"
 
+    run_headless = data.headless if data.headless is not None else settings.HEADLESS
+
     test_run = TestRun(
         application_id=app.id,
         test_suite_id=data.test_suite_id,
@@ -60,7 +62,7 @@ def start_test_run(
         mode=data.mode.upper(),
         environment=data.environment,
         browser=data.browser,
-        headless=data.headless,
+        headless=run_headless,
         status="PENDING"
     )
     db.add(test_run)
@@ -75,7 +77,7 @@ def start_test_run(
         mode=data.mode,
         environment=data.environment,
         browser=data.browser,
-        headless=data.headless,
+        headless=run_headless,
         credentials=data.credentials or app.auth_credentials,
         custom_prompt=data.custom_prompt
     )

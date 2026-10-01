@@ -103,6 +103,15 @@ class BrowserExecutionAgent:
                 # Brief UI stabilization wait
                 await self.page.wait_for_timeout(400)
 
+                # Capture step screenshot for real-time live browser preview
+                step_screenshot = None
+                try:
+                    step_screenshot = await self.evidence_collector.capture_screenshot(
+                        self.page, step_name=f"step_{step.step_number}"
+                    )
+                except Exception:
+                    step_screenshot = None
+
                 duration_ms = (time.time() - step_start) * 1000
                 step_res = StepExecutionResult(
                     step_number=step.step_number,
@@ -110,7 +119,8 @@ class BrowserExecutionAgent:
                     target=target_desc,
                     status="SUCCESS",
                     duration_ms=round(duration_ms, 2),
-                    recovered_selector=recovered_sel
+                    recovered_selector=recovered_sel,
+                    screenshot_path=step_screenshot
                 )
                 step_results.append(step_res)
 

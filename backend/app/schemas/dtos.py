@@ -127,7 +127,7 @@ class TestRunCreate(BaseModel):
     mode: str = "SMOKE"  # SMOKE, FUNCTIONAL, REGRESSION, UI, NEGATIVE, EXPLORATORY, FULL_QA
     environment: str = "qa"
     browser: str = "chromium"
-    headless: bool = True
+    headless: Optional[bool] = None
     credentials: Optional[Dict[str, Any]] = None
     custom_prompt: Optional[str] = None  # Natural language instruction if any
 
